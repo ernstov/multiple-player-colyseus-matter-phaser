@@ -1,0 +1,41 @@
+namespace: colyseus-arena
+colyseus-arena:
+  defines: runnable
+  metadata:
+    name: colyseus-arena
+    description: >-
+      A multiplayer game server application built using Colyseus, a multiplayer
+      game server for Node.js.
+    icon: https://emojiapi.dev/api/v1/joystick.svg
+  containers:
+    colyseus-arena:
+      build: .
+      image: env-1276.registry.local/colyseus-arena:master-dc63043
+      dockerfile: |
+        FROM node:16-alpine
+        WORKDIR /usr/app
+        COPY package*.json ./
+        RUN apk update && apk upgrade && apk add --no-cache bash git openssh
+        RUN npm install && npm install typescript -g
+        COPY . .
+        RUN npm build
+        CMD [ "npm", "start" ]
+  services:
+    main:
+      container: colyseus-arena
+      port: 2567
+      host-port: 2567
+      publish: false
+      protocol: TCP
+      description: The application listens to this port
+  variables:
+    node-env:
+      env: NODE_ENV
+      type: string
+      description: Defines the environment in which the application is running.
+      value: development
+    npm-config-production:
+      env: NPM_CONFIG_PRODUCTION
+      type: string
+      description: Leave as 'false' to install required devDependencies.
+      value: 'false'
